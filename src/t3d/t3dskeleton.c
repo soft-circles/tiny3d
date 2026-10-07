@@ -25,6 +25,8 @@ T3DSkeleton t3d_skeleton_clone(const T3DSkeleton *skel, bool useMatrices) {
     .bones = malloc(sizeof(T3DBone) * skel->skeletonRef->boneCount),
     .boneMatricesFP = NULL,
     .skeletonRef = skel->skeletonRef,
+    .bufferCount = useMatrices ? skel->bufferCount : 0,
+    .currentBufferIdx = useMatrices ? skel->currentBufferIdx : 0,
   };
   memcpy(result.bones, skel->bones, sizeof(T3DBone) * skel->skeletonRef->boneCount);
 
