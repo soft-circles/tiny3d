@@ -80,6 +80,13 @@ void t3d_skeleton_update(T3DSkeleton *skeleton)
 
     if(bone->hasChanged || forceUpdate)
     {
+      // Positive values are fresh changes, including animation rollover (2).
+      // Keep propagation negative so a new notification always restarts it.
+      // A changed ancestor also invalidates every buffer of its descendants.
+      if(bone->hasChanged > 0 || forceUpdate) {
+        bone->hasChanged = -skeleton->bufferCount;
+      }
+
       // only cycle through matrices if at least one bone changes.
       // this avoids flickering at the end of an animation, since it would cycle through the last X frames otherwise.
       if(matStackFP == nullptr)
@@ -102,7 +109,8 @@ void t3d_skeleton_update(T3DSkeleton *skeleton)
       }
 
       t3d_mat4_to_fixed(&matStackFP[i], &bone->matrix);
-      skeleton->bones[i].hasChanged = false;
+      // Continue until the changed pose has reached every matrix buffer.
+      ++bone->hasChanged;
     }
   }
 }
