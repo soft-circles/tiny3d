@@ -377,7 +377,7 @@ T3DM::T3DMData T3DM::parseGLTF(const char *gltfPath, const T3DM::Config &config)
 
   // sort models by transparency mode (opaque -> cutout -> transparent)
   // within the same transparency mode, sort by material
-  std::sort(t3dm.models.begin(), t3dm.models.end(), [&t3dm](const T3DM::Model &a, const T3DM::Model &b) {
+  std::stable_sort(t3dm.models.begin(), t3dm.models.end(), [&t3dm](const T3DM::Model &a, const T3DM::Model &b) {
     auto &matA = t3dm.materials[a.materialName];
     auto &matB = t3dm.materials[b.materialName];
     bool isTranspA = matA.blendMode == RDP::BLEND::MULTIPLY;

@@ -8,6 +8,7 @@
 #include <cassert>
 #include <random>
 #include <stdexcept>
+#include <map>
 #include <unordered_map>
 #include "converter.h"
 
@@ -171,7 +172,7 @@ T3DM::ModelChunked chunkUpModel(const T3DM::Model &model)
         // All except the last will only load vertices, but draw no faces. The last one will do the drawing.
 
         // iterate over all new verts and re-collect them into buffers
-        std::unordered_map<int32_t, std::vector<T3DM::VertexT3D>> vertsByBone{};
+        std::map<int32_t, std::vector<T3DM::VertexT3D>> vertsByBone{};
 
         for(uint32_t v=chunkOffset; v<(chunkOffset+emittedVerts); ++v) {
           auto &vert = res.vertices[v];

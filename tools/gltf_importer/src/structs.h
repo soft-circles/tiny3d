@@ -257,7 +257,7 @@ namespace T3DM
     std::vector<Model> models{};
     std::vector<Bone> skeletons{};
     std::vector<Anim> animations{};
-    std::unordered_map<std::string, Material> materials{};
+    std::map<std::string, Material> materials{};
   };
 
   struct Config {
