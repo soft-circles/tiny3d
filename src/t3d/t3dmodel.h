@@ -202,6 +202,19 @@ enum T3DModelChunkType {
  */
 T3DModel* t3d_model_load(const char *path);
 
+/**
+ * Loads a model from a file into a buffer you own.
+ * The model lives in the buffer, so free it with 't3d_model_release'.
+ * The buffer can be reused for another model after that.
+ *
+ * @param path FS path
+ * @param buffer 16-byte aligned memory the model is loaded into
+ * @param size size of the buffer in bytes, it must fit the decompressed file
+ *             (compressed files need some extra room to decompress in place)
+ * @return pointer to the model, equal to buffer
+ */
+T3DModel* t3d_model_load_buf(const char *path, void *buffer, int size);
+
 // callback for custom drawing, this hooks into the tile-setting section
 typedef void (*T3DModelTileCb)(void* userData, rdpq_texparms_t *tileParams, rdpq_tile_t tile);
 typedef bool (*T3DModelFilterCb)(void* userData, const T3DObject *obj);
@@ -254,9 +267,17 @@ static inline T3DModelState t3d_model_state_create() {
 
 /**
  * Free model and any related resources (e.g. textures)
+ * Models loaded with 't3d_model_load_buf' must use 't3d_model_release' instead.
  * @param model
  */
 void t3d_model_free(T3DModel* model);
+
+/**
+ * Frees all resources of a model (e.g. textures), but not the model memory itself.
+ * Use this for models loaded with 't3d_model_load_buf'.
+ * @param model
+ */
+void t3d_model_release(T3DModel* model);
 
 /**
  * Draws a model with a custom configuration.

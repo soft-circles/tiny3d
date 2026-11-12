@@ -181,9 +181,7 @@ static bool handle_bone_matrix(const T3DObjectPart *part, const T3DMat4FP* matSt
   return hadMatrixPush;
 }
 
-T3DModel *t3d_model_load(const char *path) {
-  int size = 0;
-  T3DModel* model = asset_load(path, &size);
+static T3DModel *model_init(T3DModel *model, int size, const char *path) {
   int32_t ptrOffset = (int32_t)(void*)model;
 
   if(memcmp(model->magic, "T3M", 3) != 0) {
@@ -268,6 +266,26 @@ T3DModel *t3d_model_load(const char *path) {
 
   data_cache_hit_writeback_invalidate(model, size);
   return model;
+}
+
+T3DModel *t3d_model_load(const char *path) {
+  int size = 0;
+  T3DModel* model = asset_load(path, &size);
+  return model_init(model, size, path);
+}
+
+T3DModel *t3d_model_load_buf(const char *path, void *buffer, int size) {
+  assertf(((uint32_t)buffer & 15) == 0, "Model buffer must be 16-byte aligned: %p", buffer);
+  FILE *f = fopen(path, "rb");
+  assertf(f, "Cannot open model file: %s", path);
+  fseek(f, 0, SEEK_END);
+  int fileSize = ftell(f);
+  fseek(f, 0, SEEK_SET);
+  int bufSize = size;
+  bool loaded = asset_loadf_into(f, &fileSize, buffer, &bufSize);
+  fclose(f);
+  assertf(loaded, "Model %s needs a %d byte buffer, got %d", path, bufSize, size);
+  return model_init((T3DModel*)buffer, fileSize, path);
 }
 
 void t3d_model_draw_custom(const T3DModel* model, T3DModelDrawConf conf)
@@ -458,7 +476,7 @@ void t3d_model_draw_material(T3DMaterial *mat, T3DModelState *state)
 
 }
 
-void t3d_model_free(T3DModel *model) {
+void t3d_model_release(T3DModel *model) {
   bool txtErased = false;
 
   if(model->userBlock) {
@@ -484,8 +502,12 @@ void t3d_model_free(T3DModel *model) {
       if(obj->userBlock)rspq_block_free(obj->userBlock);
     }
   }
-  free(model);
   if(txtErased) texture_cache_free_mem();
+}
+
+void t3d_model_free(T3DModel *model) {
+  t3d_model_release(model);
+  free(model);
 }
 
 T3DChunkAnim *t3d_model_get_animation(const T3DModel *model, const char *name) {
