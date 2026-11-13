@@ -42,6 +42,7 @@ all: $(BUILD_DIR)/libt3d.a
 $(BUILD_DIR)/libt3d.a: $(OBJ)
 	@mkdir -p $(dir $@)
 	@echo "    [LD_LIB] $<"
+	$(N64_OBJCOPY) --rename-section .data=.data.rsp_tinypx $(BUILD_DIR)/rsp/rsp_tinypx.o
 	$(N64_LD) -r -o $(BUILD_DIR)/libt3d.a $^
 
 $(BUILD_DIR)/libt3d.a: RSPASFLAGS+=$(N64_RSPASFLAGS)
